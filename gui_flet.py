@@ -1,4 +1,5 @@
 import flet as ft
+import json
 import subprocess
 import sys
 import os
@@ -309,8 +310,38 @@ def main(page: ft.Page):
                 progress_bar.color = ft.Colors.GREEN_600
                 progress_text.value = "학습 완료!"
 
-                metrics = extract_metrics(stdout)
+                # 🔹 experiment_result.json 우선, 없으면 stdout 파싱
+                json_path = os.path.join(script_dir, "experiment_result.json")
+                if os.path.exists(json_path):
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        exp_data = json.load(f)
 
+                    hp = exp_data.get("hyperparams", {})
+                    metrics = exp_data.get("metrics", {})
+
+                    # 하이퍼파라미터 필드 갱신
+                    if "batch_size" in hp:
+                        batch_field.value = str(hp["batch_size"])
+                    if "lr" in hp:
+                        lr_field.value = str(hp["lr"])
+                    if "epochs" in hp:
+                        epochs_field.value = str(hp["epochs"])
+                    if "optimizer" in hp:
+                        optimizer_field.value = str(hp["optimizer"])
+                    if not exp_name_field.value.strip() and "name" in exp_data:
+                        exp_name_field.value = exp_data["name"]
+
+                    # 커스텀 하이퍼파라미터
+                    skip_hp = {"batch_size", "lr", "epochs", "optimizer"}
+                    extra_hp_rows.controls.clear()
+                    for k, v in hp.items():
+                        if k not in skip_hp:
+                            _add_dynamic_row(extra_hp_rows, "속성 이름", "값", "", "",
+                                             key_val=k, val_val=v)
+                else:
+                    metrics = extract_metrics(stdout)
+
+                # 메트릭 필드 채우기
                 if "test_accuracy" in metrics:
                     accuracy_field.value = str(metrics["test_accuracy"])
                 elif "final_val_acc" in metrics:
@@ -326,7 +357,8 @@ def main(page: ft.Page):
                 for k, v in metrics.items():
                     if k not in metric_skip:
                         _add_dynamic_row(extra_metric_rows, "메트릭", "값", "", "",
-                                         key_val=k, val_val=round(v, 4), number_keyboard=True)
+                                         key_val=k, val_val=round(v, 4) if isinstance(v, float) else v,
+                                         number_keyboard=True)
 
                 status_text.value = "✅ 학습 완료! 메트릭 추출됨. 'Log to Notion'을 눌러 기록하세요."
                 status_text.color = ft.Colors.GREEN_700

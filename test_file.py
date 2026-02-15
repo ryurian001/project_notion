@@ -6,6 +6,9 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
 from tqdm.auto import tqdm
 import random
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ntrain import Experiment
 
 def set_seed(seed=777):
     random.seed(seed)
@@ -31,7 +34,18 @@ val_size = len(train_ds) - train_size
 train_ds, val_ds = random_split(train_ds, [train_size, val_size])
 
 # 3. 데이터 로더 생성
-batch_size = 128
+# 🔹 ntrain으로 하이퍼파라미터 정의
+exp = Experiment(
+    name="ResNet18_CIFAR10",
+    batch_size=128,
+    epochs=1,
+    lr=0.001,
+    optimizer="Adam",
+    weight_decay=1e-4,
+)
+print(exp)
+
+batch_size = exp.hyperparams["batch_size"]
 train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
@@ -43,10 +57,10 @@ model = model.to(device)
 
 # 5. 손실 함수 및 옵티마이저
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=exp.hyperparams["lr"], weight_decay=exp.hyperparams["weight_decay"])
 
 # 6. 학습 루프
-num_epochs = 1
+num_epochs = exp.hyperparams["epochs"]
 
 for epoch in range(num_epochs):
     model.train()
@@ -126,6 +140,13 @@ test_acc = 100 * test_correct / test_total
 
 print(f"\nTest Accuracy: {test_acc:.2f}%")
 
-# 8. 모델 저장
+# 8. 메트릭 기록 + 저장
+exp.log_metrics(
+    test_accuracy=round(test_acc, 2),
+    test_loss=round(avg_test_loss, 4),
+)
+exp.save()
+
+# 9. 모델 저장
 torch.save(model.state_dict(), "resnet18_cifar10.pth")
 print("Model saved to resnet18_cifar10.pth")
