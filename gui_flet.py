@@ -111,8 +111,9 @@ def main(page: ft.Page):
 
     # 🔹 기본 입력 필드
     exp_name_field = ft.TextField(label="Experiment Name", hint_text="예: ResNet50_Exp_01")
-    lr_field = ft.TextField(label="Learning Rate", value="0.001", keyboard_type=ft.KeyboardType.NUMBER)
     batch_field = ft.TextField(label="Batch Size", value="32", keyboard_type=ft.KeyboardType.NUMBER)
+    lr_field = ft.TextField(label="Learning Rate", value="0.001", keyboard_type=ft.KeyboardType.NUMBER)
+    epochs_field = ft.TextField(label="Epochs", value="10", keyboard_type=ft.KeyboardType.NUMBER)
     optimizer_field = ft.TextField(label="Optimizer", value="Adam")
 
     # 🔹 추가 하이퍼파라미터 영역
@@ -127,6 +128,8 @@ def main(page: ft.Page):
         "batch_size": batch_field,
         "lr": lr_field,
         "learning_rate": lr_field,
+        "num_epochs": epochs_field,
+        "epochs": epochs_field,
         "optimizer": optimizer_field,
     }
 
@@ -360,8 +363,9 @@ def main(page: ft.Page):
         try:
             data = {
                 "1_batch_size": float(batch_field.value),
-                "2_lr": float(lr_field.value),
-                "3_optimizer": optimizer_field.value.strip(),
+                "2_epochs": int(float(epochs_field.value)),
+                "3_lr": float(lr_field.value),
+                "4_optimizer": optimizer_field.value.strip(),
             }
 
             for row in extra_hp_rows.controls:
@@ -375,9 +379,9 @@ def main(page: ft.Page):
                     data[k] = v
 
             if accuracy_field.value and accuracy_field.value.strip():
-                data["4_accuracy"] = float(accuracy_field.value)
+                data["5_accuracy"] = float(accuracy_field.value)
             if loss_field.value and loss_field.value.strip():
-                data["5_loss"] = float(loss_field.value)
+                data["6_loss"] = float(loss_field.value)
 
             for row in extra_metric_rows.controls:
                 k = row.data["key_field"].value.strip()
@@ -510,6 +514,7 @@ def main(page: ft.Page):
         ft.Text("⚙️ Hyperparameters", size=16, weight=ft.FontWeight.BOLD),
         exp_name_field,
         batch_field,
+        epochs_field,
         lr_field,
         optimizer_field,
         ft.Row([
