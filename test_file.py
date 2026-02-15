@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision
-from torchsummary import summary
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
 from tqdm.auto import tqdm
@@ -18,8 +17,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 # 1. 데이터셋 다운로드
-train_ds = datasets.CIFAR10(root="./data", train=True, download=True, transform=None)
-test_ds = datasets.CIFAR10(root="./data", train=False, download=True, transform=None)
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616)),
+])
+train_ds = datasets.CIFAR10(root="./data", train=True, download=True, transform=transform)
+test_ds = datasets.CIFAR10(root="./data", train=False, download=True, transform=transform)
 
 # 2. 데이터 분할 (학습 80%, 검증 20%)
 train_size = int(0.8 * len(train_ds))
@@ -42,7 +46,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 
 # 6. 학습 루프
-num_epochs = 10
+num_epochs = 1
 
 for epoch in range(num_epochs):
     model.train()
