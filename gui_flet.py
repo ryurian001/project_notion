@@ -359,9 +359,9 @@ def main(page: ft.Page):
 
         try:
             data = {
-                "batch_size": float(batch_field.value),
-                "optimizer": optimizer_field.value.strip(),
-                "lr": float(lr_field.value),
+                "1_batch_size": float(batch_field.value),
+                "2_lr": float(lr_field.value),
+                "3_optimizer": optimizer_field.value.strip(),
             }
 
             for row in extra_hp_rows.controls:
@@ -375,9 +375,9 @@ def main(page: ft.Page):
                     data[k] = v
 
             if accuracy_field.value and accuracy_field.value.strip():
-                data["accuracy"] = float(accuracy_field.value)
+                data["4_accuracy"] = float(accuracy_field.value)
             if loss_field.value and loss_field.value.strip():
-                data["loss"] = float(loss_field.value)
+                data["5_loss"] = float(loss_field.value)
 
             for row in extra_metric_rows.controls:
                 k = row.data["key_field"].value.strip()
