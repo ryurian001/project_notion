@@ -509,8 +509,8 @@ def main(page: ft.Page):
         # 하이퍼파라미터
         ft.Text("⚙️ Hyperparameters", size=16, weight=ft.FontWeight.BOLD),
         exp_name_field,
-        lr_field,
         batch_field,
+        lr_field,
         optimizer_field,
         ft.Row([
             ft.Text("➕ Custom Properties", size=14, weight=ft.FontWeight.BOLD),
