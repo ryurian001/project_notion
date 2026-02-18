@@ -2,7 +2,7 @@
 
 from notion_client import Client
 
-NOTION_TOKEN = "ntn_m1500309380b7aY3CrYXFLgPMLSHLIKmR02mcIfcdvv1Up"
+NOTION_TOKEN = "ntn_..."
 DATA_SOURCE_ID = "3080596c-e784-80b3-871f-000b94606a2b"
 
 notion = Client(auth=NOTION_TOKEN)
