@@ -1,48 +1,40 @@
-# experiments/train_kd.py
-
-import logging
+from core.lablogger import ExperimentLogger
 import argparse
 import time
 import random
-from core.lablogger import ExperimentLogger
-
-
-
 
 
 def train(config):
+
     logger = ExperimentLogger()
 
-    logging.info("===== KD EXPERIMENT START =====")
-
+    logger.log_event("KD EXPERIMENT START")
     logger.log_config(config)
 
-    epochs = config["epochs"]
-
-    for epoch in range(epochs):
+    for epoch in range(config["epochs"]):
 
         acc = random.uniform(0.75, 0.93)
         loss = random.uniform(0.03, 0.2)
 
-        logging.info(
-            f"EPOCH={epoch} ACC={acc:.4f} LOSS={loss:.4f}"
+        # 🔥 여기 중요
+        logger.log_metric(
+            epoch=epoch,
+            accuracy=round(acc, 4),
+            loss=round(loss, 4)
         )
 
         time.sleep(0.3)
 
-    logging.info("===== KD EXPERIMENT END =====")
+    logger.end()
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    # 공통
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--epochs", type=int, default=5)
-
-    # KD 전용
     parser.add_argument("--teacher_model", type=str, default="ResNet50")
     parser.add_argument("--temperature", type=float, default=4.0)
     parser.add_argument("--alpha", type=float, default=0.7)
@@ -50,11 +42,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    config = vars(args)
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(message)s"
-    )
-
-    train(config)
+    train(vars(args))
