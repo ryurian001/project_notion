@@ -2,6 +2,7 @@ import subprocess
 import datetime
 import os
 
+
 def run_experiment(script_path, log_dir, extra_args=None):
 
     os.makedirs(log_dir, exist_ok=True)
@@ -15,7 +16,12 @@ def run_experiment(script_path, log_dir, extra_args=None):
         for k, v in extra_args.items():
             cmd += [f"--{k}", str(v)]
 
-    with open(log_path, "w") as f:
-        process = subprocess.Popen(cmd, stdout=f, stderr=f)
+    log_file = open(log_path, "w")
+
+    process = subprocess.Popen(
+        cmd,
+        stdout=log_file,
+        stderr=log_file
+    )
 
     return process, log_path
