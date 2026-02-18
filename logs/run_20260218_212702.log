@@ -1,0 +1,17 @@
+2026-02-18 21:27:02,069 - ===== EXPERIMENT START =====
+2026-02-18 21:27:02,070 - HP_lr=0.001
+2026-02-18 21:27:02,070 - HP_batch_size=32
+2026-02-18 21:27:02,071 - HP_optimizer=Adam
+2026-02-18 21:27:02,072 - EPOCH=0 ACC=0.9446 LOSS=0.0501
+2026-02-18 21:27:02,273 - EPOCH=1 ACC=0.8982 LOSS=0.0257
+2026-02-18 21:27:02,475 - EPOCH=2 ACC=0.9897 LOSS=0.0511
+2026-02-18 21:27:02,676 - EPOCH=3 ACC=0.9472 LOSS=0.0224
+2026-02-18 21:27:02,877 - EPOCH=4 ACC=0.8473 LOSS=0.1786
+2026-02-18 21:27:03,078 - ===== EXPERIMENT END =====
+2026-02-18 21:27:29,284 - HTTP Request: GET https://api.notion.com/v1/data_sources/YOUR_DATA_SOURCE_ID "HTTP/1.1 401 Unauthorized"
+2026-02-18 21:28:11,855 - HTTP Request: GET https://api.notion.com/v1/data_sources/3080596c-e784-80b3-871f-000b94606a2b "HTTP/1.1 200 OK"
+2026-02-18 21:28:12,247 - HTTP Request: GET https://api.notion.com/v1/data_sources/3080596c-e784-80b3-871f-000b94606a2b "HTTP/1.1 200 OK"
+2026-02-18 21:28:13,831 - HTTP Request: GET https://api.notion.com/v1/data_sources/3080596c-e784-80b3-871f-000b94606a2b "HTTP/1.1 200 OK"
+2026-02-18 21:28:14,074 - HTTP Request: GET https://api.notion.com/v1/data_sources/3080596c-e784-80b3-871f-000b94606a2b "HTTP/1.1 200 OK"
+2026-02-18 21:28:14,305 - HTTP Request: GET https://api.notion.com/v1/data_sources/3080596c-e784-80b3-871f-000b94606a2b "HTTP/1.1 200 OK"
+2026-02-18 21:28:14,714 - HTTP Request: POST https://api.notion.com/v1/pages "HTTP/1.1 200 OK"
