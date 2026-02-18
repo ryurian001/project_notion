@@ -1,0 +1,15 @@
+2026-02-18 22:33:20,553 - {"type": "event", "message": "experiment_start", "timestamp": "2026-02-18T22:33:20.553002"}
+2026-02-18 22:33:20,553 - ===== KD EXPERIMENT START =====
+2026-02-18 22:33:20,553 - {"type": "hyperparam", "key": "lr", "value": 0.001}
+2026-02-18 22:33:20,553 - {"type": "hyperparam", "key": "batch_size", "value": 32}
+2026-02-18 22:33:20,553 - {"type": "hyperparam", "key": "epochs", "value": 5}
+2026-02-18 22:33:20,553 - {"type": "hyperparam", "key": "teacher_model", "value": "ResNet50"}
+2026-02-18 22:33:20,553 - {"type": "hyperparam", "key": "temperature", "value": 4.0}
+2026-02-18 22:33:20,561 - {"type": "hyperparam", "key": "alpha", "value": 0.7}
+2026-02-18 22:33:20,561 - {"type": "hyperparam", "key": "distill_loss", "value": "KL"}
+2026-02-18 22:33:20,561 - EPOCH=0 ACC=0.7809 LOSS=0.1110
+2026-02-18 22:33:20,862 - EPOCH=1 ACC=0.9152 LOSS=0.1897
+2026-02-18 22:33:21,163 - EPOCH=2 ACC=0.8158 LOSS=0.1212
+2026-02-18 22:33:21,464 - EPOCH=3 ACC=0.9110 LOSS=0.1283
+2026-02-18 22:33:21,765 - EPOCH=4 ACC=0.9058 LOSS=0.1295
+2026-02-18 22:33:22,066 - ===== KD EXPERIMENT END =====

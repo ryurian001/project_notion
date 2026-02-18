@@ -4,18 +4,18 @@ import logging
 import argparse
 import time
 import random
+from core.lablogger import ExperimentLogger
 
 
-def log_hyperparams(config):
-    for k, v in config.items():
-        logging.info(f"HP_{k}={v}")
+
 
 
 def train(config):
+    logger = ExperimentLogger()
 
     logging.info("===== KD EXPERIMENT START =====")
 
-    log_hyperparams(config)
+    logger.log_config(config)
 
     epochs = config["epochs"]
 

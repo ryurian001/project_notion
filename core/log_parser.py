@@ -1,34 +1,37 @@
-# core/log_parser.py
+import json
 
 def parse_log(path):
 
-    data = {}
-    metrics = {}
+    hyperparams = {}
+    latest_metrics = {}
 
     with open(path, "r") as f:
-        lines = f.readlines()
+        for line in f:
 
-    for line in lines:
+            # 🔥 JSON 시작 위치 찾기
+            json_start = line.find("{")
 
-        if "HP_" in line:
-            part = line.split("HP_")[1].strip()
-            key, value = part.split("=")
+            if json_start == -1:
+                continue
+
+            json_part = line[json_start:].strip()
 
             try:
-                value = float(value)
+                data = json.loads(json_part)
             except:
-                pass
+                continue
 
-            data[key] = value
+            if data.get("type") == "hyperparam":
+                hyperparams[data["key"]] = data["value"]
 
-        if "ACC=" in line:
-            parts = line.strip().split()
-            for p in parts:
-                if "ACC=" in p:
-                    metrics["accuracy"] = float(p.split("=")[1])
-                if "LOSS=" in p:
-                    metrics["loss"] = float(p.split("=")[1])
+            if data.get("type") == "metric":
+                latest_metrics = data
 
-    data.update(metrics)
+    result = {}
+    result.update(hyperparams)
 
-    return data
+    if latest_metrics:
+        latest_metrics.pop("type", None)
+        result.update(latest_metrics)
+
+    return result

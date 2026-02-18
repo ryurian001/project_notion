@@ -1,0 +1,11 @@
+{"type": "event", "message": "experiment_start", "timestamp": "2026-02-18T22:36:09.670070"}
+{"type": "hyperparam", "key": "lr", "value": 0.0002}
+{"type": "hyperparam", "key": "batch_size", "value": 16}
+{"type": "hyperparam", "key": "epochs", "value": 5}
+{"type": "hyperparam", "key": "lora_rank", "value": 8}
+{"type": "metric", "timestamp": "2026-02-18T22:36:09.670070", "epoch": 0, "accuracy": 0.8948, "loss": 0.1042}
+{"type": "metric", "timestamp": "2026-02-18T22:36:09.970901", "epoch": 1, "accuracy": 0.8692, "loss": 0.143}
+{"type": "metric", "timestamp": "2026-02-18T22:36:10.272130", "epoch": 2, "accuracy": 0.8982, "loss": 0.1244}
+{"type": "metric", "timestamp": "2026-02-18T22:36:10.573902", "epoch": 3, "accuracy": 0.923, "loss": 0.175}
+{"type": "metric", "timestamp": "2026-02-18T22:36:10.874442", "epoch": 4, "accuracy": 0.9376, "loss": 0.1058}
+{"type": "event", "message": "experiment_end", "timestamp": "2026-02-18T22:36:11.175677"}
