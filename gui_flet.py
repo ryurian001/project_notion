@@ -5,7 +5,7 @@ import sys
 import os
 import re
 import threading
-from tkinter import Tk, filedialog
+
 from notion_client import Client
 from dotenv import load_dotenv
 from extract_params import extract_hyperparams, extract_metrics
@@ -65,17 +65,7 @@ def build_property(value):
         return {"rich_text": [{"text": {"content": str(value)}}]}
 
 
-def pick_file_dialog():
-    """tkinter로 파일 선택 대화상자를 열고 경로를 반환"""
-    root = Tk()
-    root.withdraw()
-    root.attributes("-topmost", True)
-    filepath = filedialog.askopenfilename(
-        title="학습 스크립트 선택",
-        filetypes=[("Python Files", "*.py")],
-    )
-    root.destroy()
-    return filepath if filepath else None
+
 
 
 # -------------------------
@@ -106,9 +96,16 @@ def main(page: ft.Page):
     progress_text = ft.Text(value="", size=13, visible=False)
 
     # 🔹 파일 경로
-    file_path_text = ft.Text(value="선택된 파일 없음", size=13, color=ft.Colors.GREY_600, italic=True)
+    file_path_field = ft.TextField(
+        label="학습 파일 경로 (.py)",
+        hint_text="예: /home/user/train.py 또는 C:\\projects\\train.py",
+        expand=True,
+    )
     selected_file = {"path": None}
     running_proc = {"proc": None}  # 실행 중인 프로세스 참조
+
+    # 🔹 Flet FilePicker (데스크톱 모드용)
+    file_picker = ft.FilePicker()
 
     # 🔹 기본 입력 필드
     exp_name_field = ft.TextField(label="Experiment Name", hint_text="예: ResNet50_Exp_01")
@@ -169,17 +166,40 @@ def main(page: ft.Page):
         page.update()
 
     # -------------------------
-    # 🔹 파일 선택 → 하이퍼파라미터 자동 채움
+    # 🔹 파일 찾아보기 (데스크톱 모드에서만 동작)
     # -------------------------
-    def on_pick_file(e):
-        filepath = pick_file_dialog()
+    async def on_browse_file(e):
+        try:
+            files = await file_picker.pick_files(
+                dialog_title="학습 스크립트 선택",
+                allowed_extensions=["py"],
+                file_type=ft.FilePickerFileType.CUSTOM,
+                allow_multiple=False,
+            )
+            if files and files[0].path:
+                file_path_field.value = files[0].path
+                page.update()
+        except Exception:
+            pass  # 웹 모드 등에서 실패 시 무시
+
+    # -------------------------
+    # 🔹 파일 로드 → 하이퍼파라미터 자동 채움
+    # -------------------------
+    def on_load_file(e):
+        filepath = file_path_field.value.strip() if file_path_field.value else ""
         if not filepath:
+            status_text.value = "⚠️ 파일 경로를 입력해주세요."
+            status_text.color = ft.Colors.ORANGE_700
+            page.update()
+            return
+
+        if not os.path.isfile(filepath):
+            status_text.value = f"❌ 파일을 찾을 수 없습니다: {filepath}"
+            status_text.color = ft.Colors.RED_700
+            page.update()
             return
 
         selected_file["path"] = filepath
-        file_path_text.value = f"📄 {os.path.basename(filepath)}"
-        file_path_text.color = ft.Colors.BLUE_700
-        file_path_text.italic = False
 
         try:
             hp = extract_hyperparams(filepath)
@@ -464,9 +484,16 @@ def main(page: ft.Page):
     # -------------------------
     # 🔹 버튼들
     # -------------------------
-    pick_btn = ft.Button(
-        "📂 학습 파일 선택 (.py)",
-        on_click=on_pick_file,
+    browse_btn = ft.IconButton(
+        icon=ft.Icons.FOLDER_OPEN,
+        icon_color=ft.Colors.PURPLE_600,
+        tooltip="파일 찾아보기",
+        on_click=on_browse_file,
+    )
+
+    load_btn = ft.Button(
+        "� 파일 로드 + 파라미터 추출",
+        on_click=on_load_file,
         color=ft.Colors.WHITE,
         bgcolor=ft.Colors.PURPLE_600,
         width=250,
@@ -532,9 +559,9 @@ def main(page: ft.Page):
         # 파일 선택 영역
         ft.Container(
             content=ft.Column([
-                ft.Row([pick_btn, run_btn], alignment=ft.MainAxisAlignment.CENTER, spacing=12),
+                ft.Row([file_path_field, browse_btn], spacing=8),
+                ft.Row([load_btn, run_btn], alignment=ft.MainAxisAlignment.CENTER, spacing=12),
                 stop_btn,
-                file_path_text,
             ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
             padding=12,
             border_radius=8,
@@ -580,4 +607,4 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    ft.app(main)
+    ft.run(main)
