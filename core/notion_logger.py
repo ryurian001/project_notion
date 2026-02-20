@@ -1,9 +1,10 @@
 # core/notion_logger.py
 
 from notion_client import Client
+import os
 
-NOTION_TOKEN = "ntn_..."
-DATA_SOURCE_ID = "3080596c-e784-80b3-871f-000b94606a2b"
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+DATA_SOURCE_ID = os.getenv("DATA_SOURCE_ID")
 
 notion = Client(auth=NOTION_TOKEN)
 
@@ -44,7 +45,7 @@ def auto_log(name, data):
         ensure_property(k, v)
 
     properties = {
-        "Name": {
+        "이름": {
             "title": [{"text": {"content": name}}]
         }
     }
