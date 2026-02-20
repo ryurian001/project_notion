@@ -1,0 +1,13 @@
+_wandb:
+  value:
+    t: test
+batch_size:
+  value: 32
+epochs:
+  value: 10
+lr:
+  value: 0.001
+optimizer:
+  value: Adam
+weight_decay:
+  value: 0.0001

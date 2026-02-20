@@ -9,6 +9,7 @@ import threading
 from notion_client import Client
 from dotenv import load_dotenv
 from extract_params import extract_hyperparams, extract_metrics
+from core.log_parsers import parse_log, detect_log_type
 
 load_dotenv()
 
@@ -164,6 +165,121 @@ def main(page: ft.Page):
     def add_custom_metric(e):
         _add_dynamic_row(extra_metric_rows, "메트릭 이름", "값", "예: f1_score", "예: 0.92", number_keyboard=True)
         page.update()
+
+    # -------------------------
+    # 🔹 외부 로그 임포트 UI 요소
+    # -------------------------
+    log_path_field = ft.TextField(
+        label="로그 디렉토리 경로",
+        hint_text="예: ./wandb/run-xxx-abc123 또는 ./runs/exp1",
+        expand=True,
+    )
+    log_type_dropdown = ft.Dropdown(
+        label="로그 타입",
+        value="auto",
+        width=160,
+        options=[
+            ft.dropdown.Option("auto", "Auto Detect"),
+            ft.dropdown.Option("wandb", "WandB"),
+            ft.dropdown.Option("tensorboard", "TensorBoard"),
+        ],
+    )
+
+    def on_import_log(e):
+        """외부 로그 파일(WandB/TensorBoard)을 파싱하여 GUI 필드에 채움"""
+        log_path = log_path_field.value.strip() if log_path_field.value else ""
+        if not log_path:
+            status_text.value = "⚠️ 로그 디렉토리 경로를 입력해주세요."
+            status_text.color = ft.Colors.ORANGE_700
+            page.update()
+            return
+
+        if not os.path.exists(log_path):
+            status_text.value = f"❌ 경로를 찾을 수 없습니다: {log_path}"
+            status_text.color = ft.Colors.RED_700
+            page.update()
+            return
+
+        status_text.value = "⏳ 로그 파싱 중..."
+        status_text.color = ft.Colors.BLUE_700
+        page.update()
+
+        try:
+            log_type = log_type_dropdown.value
+            result = parse_log(log_path, log_type if log_type != "auto" else None)
+
+            hp = result.get("hyperparams", {})
+            metrics = result.get("metrics", {})
+            name = result.get("name", "")
+
+            # Experiment Name 채우기
+            if name and not exp_name_field.value.strip():
+                exp_name_field.value = name
+
+            # 기본 하이퍼파라미터 필드 매핑
+            hp_lower = {k.lower(): (k, v) for k, v in hp.items()}
+            for known_key, field in BASE_FIELD_MAP.items():
+                if known_key in hp_lower:
+                    orig_key, val = hp_lower[known_key]
+                    field.value = str(val)
+                    del hp[orig_key]
+
+            # 남은 하이퍼파라미터 → 동적 행
+            extra_hp_rows.controls.clear()
+            for k, v in hp.items():
+                _add_dynamic_row(extra_hp_rows, "속성 이름", "값", "", "",
+                                 key_val=k, val_val=v)
+
+            # 기본 메트릭 필드 매핑
+            metric_lower = {k.lower(): (k, v) for k, v in metrics.items()}
+            for acc_key in ("accuracy", "test_accuracy", "val_accuracy", "eval_accuracy", "acc"):
+                if acc_key in metric_lower:
+                    orig_key, val = metric_lower[acc_key]
+                    accuracy_field.value = str(round(val, 4) if isinstance(val, float) else val)
+                    del metrics[orig_key]
+                    break
+
+            for loss_key in ("loss", "test_loss", "val_loss", "eval_loss"):
+                if loss_key in metric_lower:
+                    orig_key, val = metric_lower[loss_key]
+                    loss_field.value = str(round(val, 4) if isinstance(val, float) else val)
+                    del metrics[orig_key]
+                    break
+
+            # 남은 메트릭 → 동적 행
+            extra_metric_rows.controls.clear()
+            for k, v in metrics.items():
+                _add_dynamic_row(extra_metric_rows, "메트릭", "값", "", "",
+                                 key_val=k,
+                                 val_val=round(v, 4) if isinstance(v, float) else v,
+                                 number_keyboard=True)
+
+            detected = detect_log_type(log_path) or "unknown"
+            total_hp = len(BASE_FIELD_MAP) + len(extra_hp_rows.controls)
+            total_m = (1 if accuracy_field.value else 0) + (1 if loss_field.value else 0) + len(extra_metric_rows.controls)
+            status_text.value = (
+                f"✅ [{detected.upper()}] 로그 임포트 완료! "
+                f"(HP: {total_hp}개, Metrics: {total_m}개) "
+                f"'Log to Notion'을 눌러 기록하세요."
+            )
+            status_text.color = ft.Colors.GREEN_700
+
+        except ImportError as ie:
+            status_text.value = f"❌ 패키지 필요: {ie}"
+            status_text.color = ft.Colors.RED_700
+        except Exception as ex:
+            status_text.value = f"❌ 로그 파싱 오류: {ex}"
+            status_text.color = ft.Colors.RED_700
+
+        page.update()
+
+    import_log_btn = ft.ElevatedButton(
+        "📂 로그 임포트",
+        on_click=on_import_log,
+        color=ft.Colors.WHITE,
+        bgcolor=ft.Colors.INDIGO_600,
+        width=180,
+    )
 
     # -------------------------
     # 🔹 파일 찾아보기 (데스크톱 모드에서만 동작)
@@ -491,7 +607,7 @@ def main(page: ft.Page):
         on_click=on_browse_file,
     )
 
-    load_btn = ft.Button(
+    load_btn = ft.ElevatedButton(
         "� 파일 로드 + 파라미터 추출",
         on_click=on_load_file,
         color=ft.Colors.WHITE,
@@ -499,7 +615,7 @@ def main(page: ft.Page):
         width=250,
     )
 
-    run_btn = ft.Button(
+    run_btn = ft.ElevatedButton(
         "▶ 학습 실행 + 메트릭 추출",
         on_click=run_and_log,
         color=ft.Colors.WHITE,
@@ -517,7 +633,7 @@ def main(page: ft.Page):
             progress_text.value = "중단됨"
             page.update()
 
-    stop_btn = ft.Button(
+    stop_btn = ft.ElevatedButton(
         "⏹ 학습 중단",
         on_click=stop_training,
         color=ft.Colors.WHITE,
@@ -526,21 +642,21 @@ def main(page: ft.Page):
         visible=False,
     )
 
-    add_hp_btn = ft.Button(
+    add_hp_btn = ft.ElevatedButton(
         "➕ 속성 추가",
         on_click=add_custom_hp,
         color=ft.Colors.WHITE,
         bgcolor=ft.Colors.GREEN_600,
     )
 
-    add_metric_btn = ft.Button(
+    add_metric_btn = ft.ElevatedButton(
         "➕ 메트릭 추가",
         on_click=add_custom_metric,
         color=ft.Colors.WHITE,
         bgcolor=ft.Colors.TEAL_600,
     )
 
-    log_btn = ft.Button(
+    log_btn = ft.ElevatedButton(
         "🔥 Log to Notion",
         on_click=log_to_notion,
         color=ft.Colors.WHITE,
@@ -566,6 +682,19 @@ def main(page: ft.Page):
             padding=12,
             border_radius=8,
             bgcolor=ft.Colors.GREY_100,
+        ),
+        ft.Divider(height=16),
+
+        # 외부 로그 임포트 영역
+        ft.Text("📂 외부 로그 임포트 (WandB / TensorBoard)", size=16, weight=ft.FontWeight.BOLD),
+        ft.Container(
+            content=ft.Column([
+                ft.Row([log_path_field, log_type_dropdown], spacing=8),
+                ft.Row([import_log_btn], alignment=ft.MainAxisAlignment.CENTER),
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
+            padding=12,
+            border_radius=8,
+            bgcolor=ft.Colors.INDIGO_50,
         ),
         ft.Divider(height=16),
 
