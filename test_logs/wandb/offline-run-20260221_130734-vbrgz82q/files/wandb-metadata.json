@@ -1,0 +1,8 @@
+{
+  "python": "3.10.19",
+  "host": "luka-A620M-HDV-M-2",
+  "os": "Linux",
+  "program": "test_wandb_real.py",
+  "gpu": "NVIDIA GeForce RTX 4070",
+  "gpuCount": 1
+}

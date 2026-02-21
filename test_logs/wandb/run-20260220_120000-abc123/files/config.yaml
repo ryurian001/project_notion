@@ -7,6 +7,10 @@ epochs:
   value: 10
 lr:
   value: 0.001
+model:
+  value:
+    name: ResNet18
+    pretrained: true
 optimizer:
   value: Adam
 weight_decay:
