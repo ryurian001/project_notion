@@ -33,11 +33,17 @@ def run_experiment(script_path, log_dir, workspace=".", extra_args=None):
 
     log_file = open(log_path, "w")
 
+    env = os.environ.copy()
+    script_dir = os.path.abspath(os.path.join(project_root, os.path.dirname(script_path)))
+    # Add script_dir to PYTHONPATH so relative sibling imports work when run as a module
+    env["PYTHONPATH"] = f'{script_dir}:{env.get("PYTHONPATH", "")}' if env.get("PYTHONPATH") else script_dir
+
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         cwd=project_root,
+        env=env,
         bufsize=1,
         universal_newlines=True
     )

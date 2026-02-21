@@ -248,6 +248,42 @@ if st.session_state.grid_running:
             pass
         else:
             # 완료됨 → 다음으로
+            token = st.session_state.get("notion_token", "")
+            db_id = st.session_state.get("notion_db_id", "")
+            tested = st.session_state.get("notion_tested", False)
+
+            if token and db_id and tested and st.session_state.grid_completed_logs:
+                try:
+                    # 방금 끝난 로그 파싱 및 자동 기록
+                    completed_log_path = st.session_state.grid_completed_logs[-1]
+                    completed_log_name = os.path.basename(completed_log_path).replace(".log", "")
+                    
+                    hp, metrics = parse_log(completed_log_path)
+                    
+                    key_mapping = {
+                        "timestamp": "0_timestamp",
+                        "batch_size": "1_batch_size",
+                        "epochs": "2_epochs",
+                        "lr": "3_lr",            
+                        "accuracy": "4_accuracy",            
+                        "loss": "5_loss"
+                    }
+                    
+                    edited_data = {}
+                    for k, v in hp.items():
+                        new_key = key_mapping.get(k.lower(), k)
+                        edited_data[new_key] = v
+                        
+                    for k, v in metrics.items():
+                        if k.lower() != "epoch":
+                            new_key = key_mapping.get(k.lower(), k)
+                            edited_data[new_key] = v
+                            
+                    auto_log(completed_log_name, edited_data, token, db_id)
+                    st.toast(f"✅ {completed_log_name} Notion 로깅 완료!")
+                except Exception as e:
+                    st.toast(f"❌ {completed_log_name} Notion 로깅 실패: {e}")
+
             st.session_state.grid_current += 1
             st.session_state.grid_process = None
             current_idx = st.session_state.grid_current
