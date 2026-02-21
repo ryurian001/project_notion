@@ -186,14 +186,13 @@ with col_stop:
 with col_notion:
     notion_clicked = st.button("📤 Log to Notion")
 
-# 실험 스크립트 선택
-exp_dir = "experiments"
-if os.path.exists(exp_dir):
-    exp_files = [f for f in os.listdir(exp_dir) if f.endswith(".py") and f != "__init__.py"]
-else:
-    exp_files = []
+# 실험 스크립트 안내 (Experiment Run 페이지의 설정을 따름)
+if "selected_exp" not in st.session_state or not st.session_state.selected_exp:
+    st.warning("⚠️ 선택된 실험 스크립트가 없습니다. 'Experiment Run' 페이지에서 먼저 스크립트를 선택해주세요.")
+    st.stop()
 
-script_name = st.selectbox("📂 실험 스크립트 선택", exp_files)
+script_name = st.session_state.selected_exp
+st.info(f"📂 실행될 실험 스크립트: **{script_name}**  \n*(변경하려면 'Experiment Run' 페이지에서 재선택하세요)*")
 
 
 # ----------------------

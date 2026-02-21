@@ -33,7 +33,17 @@ if os.path.exists(exp_dir):
 else:
     exp_files = []
 
-selected_exp = st.selectbox("📂 Select Experiment", exp_files)
+if "selected_exp" not in st.session_state:
+    st.session_state.selected_exp = exp_files[0] if exp_files else None
+
+try:
+    default_idx = exp_files.index(st.session_state.selected_exp) if st.session_state.selected_exp in exp_files else 0
+except ValueError:
+    default_idx = 0
+
+selected_exp = st.selectbox("📂 Select Experiment", exp_files, index=default_idx)
+st.session_state.selected_exp = selected_exp
+
 log_dir = st.text_input("📁 Log Directory", value="logs")
 
 
