@@ -15,16 +15,23 @@ st.subheader("📂 로그 폴더 선택")
 
 default_log_dir = "logs"
 
-# 프로젝트에 있는 폴더 목록 자동 탐색
+# 프로젝트에 있는 폴더 목록 자동 탐색 (하위 폴더 포함)
 workspace = st.session_state.get("workspace", ".")
 project_root = os.path.abspath(workspace)
 
 all_dirs = []
 if os.path.exists(project_root):
-    for item in os.listdir(project_root):
-        full_path = os.path.join(project_root, item)
-        if os.path.isdir(full_path) and not item.startswith(".") and item not in ("__pycache__", "core", "experiments", "data", "ntrain"):
-            all_dirs.append(item)
+    for root, dirs, files in os.walk(project_root):
+        # 숨김 폴더나 불필요한 폴더 제외
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("__pycache__", "core", "data", "ntrain", "venv", "env")]
+        
+        # .log 파일이 하나라도 존재하는지 확인 후 추가
+        if any(f.endswith(".log") for f in files):
+            rel_path = os.path.relpath(root, project_root)
+            if rel_path == ".":
+                all_dirs.append(".")
+            else:
+                all_dirs.append(rel_path.replace("\\", "/"))
 
 if not all_dirs:
     all_dirs = [default_log_dir]

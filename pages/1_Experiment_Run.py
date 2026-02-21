@@ -27,29 +27,39 @@ if "exp_log_file" not in st.session_state:
 # ----------------------
 # 실험 파일 선택
 # ----------------------
-# workspace가 설정되어 있지 않으면 기본값 "."
 workspace = st.session_state.get("workspace", ".")
 exp_dir = os.path.join(workspace, "experiments")
 
+exp_files = []
 if os.path.exists(exp_dir):
     exp_files = [f for f in os.listdir(exp_dir) if f.endswith(".py") and f != "__init__.py"]
+
+exp_options = exp_files + ["직접 입력 (Custom)"]
+
+# 이전에 선택된 값이 exp_files에 없으면 Custom으로 취급
+previous_selected = st.session_state.get("selected_exp")
+
+if previous_selected and previous_selected.startswith("experiments/"):
+    prev_filename = previous_selected.replace("experiments/", "", 1)
 else:
-    exp_files = []
+    prev_filename = previous_selected
 
-if "selected_exp" not in st.session_state:
-    st.session_state.selected_exp = exp_files[0] if exp_files else None
+is_custom_prev = prev_filename not in exp_files if prev_filename else True
 
-try:
-    if exp_files:
-        default_idx = exp_files.index(st.session_state.selected_exp) if st.session_state.selected_exp in exp_files else 0
-    else:
+if is_custom_prev and previous_selected:
+    default_idx = len(exp_options) - 1 # "직접 입력 (Custom)"
+else:
+    try:
+        default_idx = exp_files.index(prev_filename) if prev_filename in exp_files else 0
+    except ValueError:
         default_idx = 0
-except ValueError:
-    default_idx = 0
 
-selected_exp = st.selectbox("📂 Select Experiment", exp_files if exp_files else ["(experiments 폴더 없음)"], index=default_idx)
-if selected_exp != "(experiments 폴더 없음)":
-    st.session_state.selected_exp = selected_exp
+selected_option = st.selectbox("📂 Select Experiment", exp_options, index=default_idx)
+
+if selected_option == "직접 입력 (Custom)":
+    st.session_state.selected_exp = st.text_input("📝 실험 스크립트 경로 (workspace 기준 상대 경로)", value=previous_selected if is_custom_prev and previous_selected else "experiments/my_script.py")
+else:
+    st.session_state.selected_exp = f"experiments/{selected_option}"
 
 if "target_log_dir" not in st.session_state:
     st.session_state.target_log_dir = "logs"
@@ -89,12 +99,12 @@ with col2:
     stop_clicked = st.button("⛔ Stop Experiment", disabled=not st.session_state.exp_running)
 
 if start_clicked and not st.session_state.exp_running:
-    if selected_exp and selected_exp != "(experiments 폴더 없음)":
+    if st.session_state.selected_exp:
         st.session_state.exp_output_lines = []
 
         workspace = st.session_state.get("workspace", ".")
         process, log_path, log_file = run_experiment(
-            script_path=f"experiments/{selected_exp}",
+            script_path=st.session_state.selected_exp,
             log_dir=log_dir,
             workspace=workspace
         )

@@ -311,7 +311,7 @@ if st.session_state.grid_running:
 
             workspace = st.session_state.get("workspace", ".")
             process, log_path, log_file = run_experiment(
-                script_path=f"experiments/{st.session_state._grid_script}",
+                script_path=st.session_state._grid_script,
                 log_dir=st.session_state._grid_save_dir,
                 workspace=workspace,
                 extra_args=combo
