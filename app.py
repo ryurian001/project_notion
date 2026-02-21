@@ -16,9 +16,6 @@ if "notion_token" not in st.session_state:
 if "notion_db_id" not in st.session_state:
     st.session_state.notion_db_id = ""
 
-if "notion_ds_id" not in st.session_state:
-    st.session_state.notion_ds_id = ""
-
 col1, col2 = st.columns(2)
 
 with col1:
@@ -40,7 +37,7 @@ with col2:
 if st.button("💾 저장"):
     st.session_state.notion_token = token
     st.session_state.notion_db_id = db_id
-    st.success("✅ 설정이 저장되었습니다!")
+    st.success("✅ 설정이 저장되었습니다! (연결 테스트를 진행해주세요)")
 
 # 연결 테스트
 if st.button("🔌 연결 테스트"):
@@ -48,24 +45,25 @@ if st.button("🔌 연결 테스트"):
         st.error("토큰과 Database ID를 먼저 입력해주세요.")
     else:
         from core.notion_logger import test_connection
-        with st.spinner("연결 테스트 중... (Database ID → Data Source ID 조회)"):
-            success, msg, ds_id = test_connection(token, db_id)
+        with st.spinner("연결 테스트 중... (Database 조회)"):
+            success, msg, _ = test_connection(token, db_id)
         if success:
             st.success(f"✅ {msg}")
             # 성공 시 자동 저장
             st.session_state.notion_token = token
             st.session_state.notion_db_id = db_id
-            st.session_state.notion_ds_id = ds_id
+            st.session_state.notion_tested = True
         else:
             st.error(f"❌ 연결 실패: {msg}")
+            st.session_state.notion_tested = False
 
 st.markdown("---")
 
 # 현재 설정 상태 표시
-if st.session_state.notion_token and st.session_state.notion_ds_id:
-    st.info(f"🟢 Notion API 설정 완료 (Data Source ID: {st.session_state.notion_ds_id[:8]}...)")
+if st.session_state.notion_token and st.session_state.get("notion_tested", False):
+    st.info(f"🟢 Notion API 설정 및 테스트 완료")
 elif st.session_state.notion_token and st.session_state.notion_db_id:
-    st.warning("🟡 연결 테스트를 실행하여 Data Source ID를 조회해주세요.")
+    st.warning("🟡 연결 테스트를 실행하여 Notion 연결을 확인해주세요.")
 else:
     st.warning("🟡 Notion API 설정이 필요합니다. 토큰과 Database ID를 입력 후 연결 테스트를 실행해주세요.")
 

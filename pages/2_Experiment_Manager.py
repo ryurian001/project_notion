@@ -56,8 +56,11 @@ if not logs:
 
 selected_log = st.selectbox("📄 Select Log", logs)
 
-# 로그에서 자동 추출
-data = parse_log(os.path.join(log_dir, selected_log))
+# 로그에서 자동 추출 (하이퍼파라미터와 메트릭 분리)
+hyperparams, latest_metrics = parse_log(os.path.join(log_dir, selected_log))
+
+# epoch 관련 정보 제거
+latest_metrics = {k: v for k, v in latest_metrics.items() if k.lower() not in ("epoch", "epochs")}
 
 st.markdown("---")
 
@@ -71,7 +74,7 @@ st.caption("ℹ️ `epochs` 파라미터는 단일값으로만 설정 가능합�
 
 params_config = {}
 
-for k, v in data.items():
+for k, v in hyperparams.items():
     # epoch은 범위 선택 불가
     is_epoch = k.lower() in ("epoch", "epochs")
     is_numeric = isinstance(v, (int, float))
@@ -294,16 +297,22 @@ if st.session_state.grid_running:
 # ----------------------
 if notion_clicked:
     token = st.session_state.get("notion_token", "")
-    ds_id = st.session_state.get("notion_ds_id", "")
+    db_id = st.session_state.get("notion_db_id", "")
+    tested = st.session_state.get("notion_tested", False)
 
-    if not token or not ds_id:
-        st.error("❌ 먼저 Home 페이지에서 Notion API 설정을 완료해주세요.")
+    if not token or not db_id or not tested:
+        st.error("❌ 먼저 Home 페이지에서 Notion API 연결 테스트를 완료해주세요.")
     else:
         # 단일값으로 편집된 파라미터 수집
         edited_data = {}
         for k, config in params_config.items():
             if config["mode"] == "single":
                 edited_data[k] = config["value"]
+                
+        # 메트릭 붙이기 (epoch는 제외)
+        for k, v in latest_metrics.items():
+            if k.lower() != "epoch":
+                edited_data[k] = v
 
         with st.spinner("Notion에 기록 중..."):
             try:
@@ -311,7 +320,7 @@ if notion_clicked:
                     selected_log.replace(".log", ""),
                     edited_data,
                     token,
-                    ds_id
+                    db_id
                 )
                 st.success("✅ Notion에 기록 완료!")
             except Exception as e:
