@@ -51,8 +51,13 @@ selected_exp = st.selectbox("📂 Select Experiment", exp_files if exp_files els
 if selected_exp != "(experiments 폴더 없음)":
     st.session_state.selected_exp = selected_exp
 
-log_dir = st.text_input("📁 Log Directory", value="logs")
+if "target_log_dir" not in st.session_state:
+    st.session_state.target_log_dir = "logs"
 
+log_dir = st.text_input("📁 Log Directory", value=st.session_state.target_log_dir)
+# Update session_state if changed manually without using the key parameter to avoid Streamlit rerun loops
+if log_dir != st.session_state.target_log_dir:
+    st.session_state.target_log_dir = log_dir
 
 # ----------------------
 # 백그라운드 출력 수집 스레드

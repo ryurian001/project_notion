@@ -38,12 +38,25 @@ workspace = st.session_state.get("workspace", ".")
 col_log1, col_log2 = st.columns(2)
 
 with col_log1:
-    log_dir_input = st.text_input("로그 폴더 (읽기)", value="logs")
+    if "target_log_dir" not in st.session_state:
+        st.session_state.target_log_dir = "logs"
+        
+    log_dir_input = st.text_input("로그 폴더 (읽기)", value=st.session_state.target_log_dir)
+    if log_dir_input != st.session_state.target_log_dir:
+        st.session_state.target_log_dir = log_dir_input
+        
     log_dir = os.path.join(workspace, log_dir_input)
 
 with col_log2:
-    save_log_dir_input = st.text_input("저장 폴더 (Grid Search 결과)", value="logs")
-    save_log_dir = os.path.join(workspace, save_log_dir_input)
+    save_log_dir_input = st.text_input("저장 폴더 (Grid Search 결과)", value=".")
+    
+    # . 이면 로그 폴더와 동일, 그 외에는 로그 폴더 하위 경로로 설정
+    if save_log_dir_input.strip() == ".":
+        target_save_path = log_dir_input
+    else:
+        target_save_path = os.path.join(log_dir_input, save_log_dir_input)
+        
+    save_log_dir = os.path.join(workspace, target_save_path)
 
 if not os.path.exists(log_dir):
     st.warning(f"로그 폴더가 없습니다: {log_dir}")
