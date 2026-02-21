@@ -9,6 +9,20 @@ def get_client(token):
     return Client(auth=token)
 
 
+def get_data_source_id(notion, db_id):
+    db = notion.databases.retrieve(db_id)
+    data_sources = db.get("data_sources", [])
+    if not data_sources:
+        raise Exception("데이터베이스에 data_source가 없습니다.")
+    return data_sources[0]["id"].replace("-", "")
+
+def get_title_property(notion, ds_id):
+    ds = notion.data_sources.retrieve(ds_id)
+    for name, prop in ds["properties"].items():
+        if prop["type"] == "title":
+            return name
+    return None
+
 def infer_schema(value):
     if isinstance(value, bool):
         return {"checkbox": {}}
@@ -17,22 +31,14 @@ def infer_schema(value):
     else:
         return {"rich_text": {}}
 
-
-def ensure_properties(notion, db_id, data):
-    db = notion.databases.retrieve(db_id)
-    existing_props = db.get("properties", {})
-    
-    missing_props = {}
-    for k, v in data.items():
-        if k not in existing_props and k != "이름":
-            missing_props[k] = infer_schema(v)
-            
-    if missing_props:
-        notion.databases.update(
-            database_id=db_id,
-            properties=missing_props
-        )
-
+def ensure_property(notion, ds_id, prop_name, value):
+    ds = notion.data_sources.retrieve(ds_id)
+    if prop_name in ds["properties"]:
+        return
+    notion.data_sources.update(
+        data_source_id=ds_id,
+        properties={prop_name: infer_schema(value)}
+    )
 
 def build_property(value):
     if isinstance(value, bool):
@@ -42,42 +48,32 @@ def build_property(value):
     else:
         return {"rich_text": [{"text": {"content": str(value)}}]}
 
-
 def auto_log(name, data, token, db_id):
     """Notion에 실험 결과 기록"""
     notion = get_client(token)
 
-    # 지정된 속성 이름 매핑
-    key_mapping = {
-        "lr": "1.lr",
-        "batch_size": "2.batch_size",
-        "epochs": "3.epochs",
-        "accuracy": "4.accuracy",
-        "loss": "5.loss"
-    }
+    ds_id = get_data_source_id(notion, db_id)
+    title_column = get_title_property(notion, ds_id)
 
-    mapped_data = {}
+    if not title_column:
+        raise Exception("Title 컬럼을 찾을 수 없음")
+
     for k, v in data.items():
-        new_key = key_mapping.get(k, k)
-        mapped_data[new_key] = v
-
-    # 누락된 속성 한번에 추가 (속도 개선)
-    ensure_properties(notion, db_id, mapped_data)
+        ensure_property(notion, ds_id, k, v)
 
     properties = {
-        "이름": {
+        title_column: {
             "title": [{"text": {"content": name}}]
         }
     }
 
-    for k, v in mapped_data.items():
+    for k, v in data.items():
         properties[k] = build_property(v)
 
     notion.pages.create(
         parent={"database_id": db_id},
         properties=properties
     )
-
 
 def test_connection(token, database_id):
     """Notion 연결 테스트"""

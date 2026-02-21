@@ -303,16 +303,27 @@ if notion_clicked:
     if not token or not db_id or not tested:
         st.error("❌ 먼저 Home 페이지에서 Notion API 연결 테스트를 완료해주세요.")
     else:
-        # 단일값으로 편집된 파라미터 수집
+        # 단일값으로 편집된 파라미터 수집 및 이름 변환 (flet.py 로직 동일적용)
+        key_mapping = {
+            "timestamp": "0_timestamp",
+            "batch_size": "1_batch_size",
+            "epochs": "2_epochs",
+            "lr": "3_lr",            
+            "accuracy": "4_accuracy",            
+            "loss": "5_loss"
+        }
+
         edited_data = {}
         for k, config in params_config.items():
             if config["mode"] == "single":
-                edited_data[k] = config["value"]
+                new_key = key_mapping.get(k.lower(), k)
+                edited_data[new_key] = config["value"]
                 
         # 메트릭 붙이기 (epoch는 제외)
         for k, v in latest_metrics.items():
             if k.lower() != "epoch":
-                edited_data[k] = v
+                new_key = key_mapping.get(k.lower(), k)
+                edited_data[new_key] = v
 
         with st.spinner("Notion에 기록 중..."):
             try:
