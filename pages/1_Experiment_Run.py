@@ -27,7 +27,10 @@ if "exp_log_file" not in st.session_state:
 # ----------------------
 # 실험 파일 선택
 # ----------------------
-exp_dir = "experiments"
+# workspace가 설정되어 있지 않으면 기본값 "."
+workspace = st.session_state.get("workspace", ".")
+exp_dir = os.path.join(workspace, "experiments")
+
 if os.path.exists(exp_dir):
     exp_files = [f for f in os.listdir(exp_dir) if f.endswith(".py") and f != "__init__.py"]
 else:
@@ -37,12 +40,16 @@ if "selected_exp" not in st.session_state:
     st.session_state.selected_exp = exp_files[0] if exp_files else None
 
 try:
-    default_idx = exp_files.index(st.session_state.selected_exp) if st.session_state.selected_exp in exp_files else 0
+    if exp_files:
+        default_idx = exp_files.index(st.session_state.selected_exp) if st.session_state.selected_exp in exp_files else 0
+    else:
+        default_idx = 0
 except ValueError:
     default_idx = 0
 
-selected_exp = st.selectbox("📂 Select Experiment", exp_files, index=default_idx)
-st.session_state.selected_exp = selected_exp
+selected_exp = st.selectbox("📂 Select Experiment", exp_files if exp_files else ["(experiments 폴더 없음)"], index=default_idx)
+if selected_exp != "(experiments 폴더 없음)":
+    st.session_state.selected_exp = selected_exp
 
 log_dir = st.text_input("📁 Log Directory", value="logs")
 
@@ -77,26 +84,29 @@ with col2:
     stop_clicked = st.button("⛔ Stop Experiment", disabled=not st.session_state.exp_running)
 
 if start_clicked and not st.session_state.exp_running:
-    st.session_state.exp_output_lines = []
+    if selected_exp and selected_exp != "(experiments 폴더 없음)":
+        st.session_state.exp_output_lines = []
 
-    process, log_path, log_file = run_experiment(
-        script_path=f"experiments/{selected_exp}",
-        log_dir=log_dir
-    )
+        workspace = st.session_state.get("workspace", ".")
+        process, log_path, log_file = run_experiment(
+            script_path=f"experiments/{selected_exp}",
+            log_dir=log_dir,
+            workspace=workspace
+        )
 
-    st.session_state.exp_process = process
-    st.session_state.exp_log_path = log_path
-    st.session_state.exp_log_file = log_file
-    st.session_state.exp_running = True
+        st.session_state.exp_process = process
+        st.session_state.exp_log_path = log_path
+        st.session_state.exp_log_file = log_file
+        st.session_state.exp_running = True
 
-    # 백그라운드 스레드로 출력 수집
-    t = threading.Thread(
-        target=collect_output,
-        args=(process, log_file, st.session_state.exp_output_lines),
-        daemon=True
-    )
-    t.start()
-    st.rerun()
+        # 백그라운드 스레드로 출력 수집
+        t = threading.Thread(
+            target=collect_output,
+            args=(process, log_file, st.session_state.exp_output_lines),
+            daemon=True
+        )
+        t.start()
+        st.rerun()
 
 if stop_clicked and st.session_state.exp_running:
     if st.session_state.exp_process:

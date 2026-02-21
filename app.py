@@ -1,8 +1,38 @@
 import streamlit as st
+import os
 
 st.set_page_config(page_title="Experiment Platform", layout="wide")
 
 st.title("🧪 Experiment Platform")
+st.markdown("---")
+
+# ----------------------
+# Workspace 설정
+# ----------------------
+st.subheader("📁 Workspace 설정")
+
+if "workspace" not in st.session_state:
+    st.session_state.workspace = os.path.abspath(".")
+
+ws_col1, ws_col2 = st.columns([3, 1])
+with ws_col1:
+    workspace_input = st.text_input(
+        "Workspace Directory",
+        value=st.session_state.workspace,
+        placeholder="프로젝트 루트 디렉토리 절대경로를 입력하세요."
+    )
+with ws_col2:
+    st.write("")
+    st.write("")
+    if st.button("📁 경로 적용"):
+        if os.path.isdir(workspace_input):
+            st.session_state.workspace = os.path.abspath(workspace_input)
+            st.success(f"✅ 워크스페이스가 변경되었습니다: {st.session_state.workspace}")
+        else:
+            st.error("❌ 유효한 디렉토리 경로가 아닙니다.")
+
+st.info(f"📍 현재 워크스페이스: **{st.session_state.workspace}**")
+
 st.markdown("---")
 
 # ----------------------

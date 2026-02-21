@@ -33,16 +33,20 @@ if "grid_completed_logs" not in st.session_state:
 # ----------------------
 st.subheader("📂 로그 설정")
 
+workspace = st.session_state.get("workspace", ".")
+
 col_log1, col_log2 = st.columns(2)
 
 with col_log1:
-    log_dir = st.text_input("로그 폴더 (읽기)", value="logs")
+    log_dir_input = st.text_input("로그 폴더 (읽기)", value="logs")
+    log_dir = os.path.join(workspace, log_dir_input)
 
 with col_log2:
-    save_log_dir = st.text_input("저장 폴더 (Grid Search 결과)", value="logs")
+    save_log_dir_input = st.text_input("저장 폴더 (Grid Search 결과)", value="logs")
+    save_log_dir = os.path.join(workspace, save_log_dir_input)
 
 if not os.path.exists(log_dir):
-    st.warning("로그 폴더가 없습니다.")
+    st.warning(f"로그 폴더가 없습니다: {log_dir}")
     st.stop()
 
 logs = sorted(
@@ -256,9 +260,11 @@ if st.session_state.grid_running:
             combo = combos[current_idx]
             st.info(f"🔄 실행 중 [{current_idx + 1}/{total}]: {combo}")
 
+            workspace = st.session_state.get("workspace", ".")
             process, log_path, log_file = run_experiment(
                 script_path=f"experiments/{st.session_state._grid_script}",
                 log_dir=st.session_state._grid_save_dir,
+                workspace=workspace,
                 extra_args=combo
             )
 
