@@ -1,0 +1,12 @@
+{
+  "final_test_loss": 0.3973743375778198,
+  "epoch": 2,
+  "train/accuracy": 0.90165,
+  "val/loss": 0.3722887855172157,
+  "final_test_accuracy": 0.8703,
+  "train/loss": 0.28865455021858216,
+  "val/accuracy": 0.8764,
+  "test/accuracy": 0.8703,
+  "test/loss": 0.3973743375778198,
+  "best_val_accuracy": 0.8764
+}

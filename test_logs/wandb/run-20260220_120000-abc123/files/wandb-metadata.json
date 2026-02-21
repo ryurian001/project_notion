@@ -1,0 +1,7 @@
+{
+  "codePath": "train.py",
+  "python": "3.10.12",
+  "host": "gpu-server-01",
+  "gpu": "NVIDIA RTX 4090",
+  "gpuCount": 1
+}

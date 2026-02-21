@@ -1,0 +1,16 @@
+batch_size:
+  value: 128
+dataset:
+  value: CIFAR10
+epochs:
+  value: 2
+lr:
+  value: 0.001
+model:
+  value: ResNet18
+optimizer:
+  value: Adam
+seed:
+  value: 777
+weight_decay:
+  value: 0.0001

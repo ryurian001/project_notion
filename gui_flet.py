@@ -170,8 +170,8 @@ def main(page: ft.Page):
     # 🔹 외부 로그 임포트 UI 요소
     # -------------------------
     log_path_field = ft.TextField(
-        label="로그 디렉토리 경로",
-        hint_text="예: ./wandb/run-xxx-abc123 또는 ./runs/exp1",
+        label="로그 디렉토리/파일 경로",
+        hint_text="예: ./wandb/run-xxx 또는 ./runs/exp1 또는 log.csv",
         expand=True,
     )
     log_type_dropdown = ft.Dropdown(
@@ -182,6 +182,7 @@ def main(page: ft.Page):
             ft.dropdown.Option("auto", "Auto Detect"),
             ft.dropdown.Option("wandb", "WandB"),
             ft.dropdown.Option("tensorboard", "TensorBoard"),
+            ft.dropdown.Option("csv", "CSV Log"),
         ],
     )
 
@@ -686,7 +687,7 @@ def main(page: ft.Page):
         ft.Divider(height=16),
 
         # 외부 로그 임포트 영역
-        ft.Text("📂 외부 로그 임포트 (WandB / TensorBoard)", size=16, weight=ft.FontWeight.BOLD),
+        ft.Text("📂 외부 로그 임포트 (WandB / TensorBoard / CSV)", size=16, weight=ft.FontWeight.BOLD),
         ft.Container(
             content=ft.Column([
                 ft.Row([log_path_field, log_type_dropdown], spacing=8),
