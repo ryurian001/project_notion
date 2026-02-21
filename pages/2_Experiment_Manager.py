@@ -48,7 +48,7 @@ with col_log1:
     log_dir = os.path.join(workspace, log_dir_input)
 
 with col_log2:
-    save_log_dir_input = st.text_input("저장 폴더 (Grid Search 결과)", value=".")
+    save_log_dir_input = st.text_input("저장 폴더 (Grid Search 결과) (로그 폴더 기준 상대 경로)", value=".")
     
     # . 이면 로그 폴더와 동일, 그 외에는 로그 폴더 하위 경로로 설정
     if save_log_dir_input.strip() == ".":
