@@ -1,0 +1,15 @@
+{"type": "event", "message": "experiment_start", "timestamp": "2026-02-18T22:48:38.672597"}
+{"type": "event", "message": "KD EXPERIMENT START", "timestamp": "2026-02-18T22:48:38.673612"}
+{"type": "hyperparam", "key": "lr", "value": 0.001}
+{"type": "hyperparam", "key": "batch_size", "value": 32}
+{"type": "hyperparam", "key": "epochs", "value": 5}
+{"type": "hyperparam", "key": "teacher_model", "value": "ResNet50"}
+{"type": "hyperparam", "key": "temperature", "value": 4.0}
+{"type": "hyperparam", "key": "alpha", "value": 0.7}
+{"type": "hyperparam", "key": "distill_loss", "value": "KL"}
+{"type": "metric", "timestamp": "2026-02-18T22:48:38.674611", "epoch": 0, "accuracy": 0.8474, "loss": 0.1561}
+{"type": "metric", "timestamp": "2026-02-18T22:48:38.975701", "epoch": 1, "accuracy": 0.8268, "loss": 0.1832}
+{"type": "metric", "timestamp": "2026-02-18T22:48:39.276554", "epoch": 2, "accuracy": 0.7756, "loss": 0.1857}
+{"type": "metric", "timestamp": "2026-02-18T22:48:39.577528", "epoch": 3, "accuracy": 0.8949, "loss": 0.071}
+{"type": "metric", "timestamp": "2026-02-18T22:48:39.878430", "epoch": 4, "accuracy": 0.7701, "loss": 0.0409}
+{"type": "event", "message": "experiment_end", "timestamp": "2026-02-18T22:48:40.178993"}

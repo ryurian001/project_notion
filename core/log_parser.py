@@ -27,11 +27,7 @@ def parse_log(path):
             if data.get("type") == "metric":
                 latest_metrics = data
 
-    result = {}
-    result.update(hyperparams)
-
     if latest_metrics:
         latest_metrics.pop("type", None)
-        result.update(latest_metrics)
 
-    return result
+    return hyperparams, latest_metrics

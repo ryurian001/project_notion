@@ -3,9 +3,14 @@ import datetime
 import os
 import sys
 
-def run_experiment(script_path, log_dir, extra_args=None):
 
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+def run_experiment(script_path, log_dir, workspace=".", extra_args=None):
+    """
+    실험 실행. stdout/stderr를 PIPE로 캡처하여 실시간 읽기 가능.
+    동시에 로그 파일에도 기록.
+    Returns: (process, log_path, log_file)
+    """
+    project_root = os.path.abspath(workspace)
 
     logs_path = os.path.join(project_root, log_dir)
     os.makedirs(logs_path, exist_ok=True)
@@ -13,25 +18,34 @@ def run_experiment(script_path, log_dir, extra_args=None):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = os.path.join(logs_path, f"run_{timestamp}.log")
 
-    full_script_path = os.path.join(project_root, script_path)
-
     cmd = [
-        sys.executable,
+        sys.executable, "-u",  # -u: unbuffered output
         "-m",
         script_path.replace("/", ".").replace("\\", ".").replace(".py", "")
     ]
 
     if extra_args:
         for k, v in extra_args.items():
+            # 정수형 float (16.0 등) → int 변환하여 argparse 호환
+            if isinstance(v, float) and v == int(v):
+                v = int(v)
             cmd += [f"--{k}", str(v)]
 
     log_file = open(log_path, "w")
 
+    env = os.environ.copy()
+    script_dir = os.path.abspath(os.path.join(project_root, os.path.dirname(script_path)))
+    # Add script_dir to PYTHONPATH so relative sibling imports work when run as a module
+    env["PYTHONPATH"] = f'{script_dir}:{env.get("PYTHONPATH", "")}' if env.get("PYTHONPATH") else script_dir
+
     process = subprocess.Popen(
         cmd,
-        stdout=log_file,
-        stderr=log_file,
-        cwd=project_root
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=project_root,
+        env=env,
+        bufsize=1,
+        universal_newlines=True
     )
 
-    return process, log_path
+    return process, log_path, log_file

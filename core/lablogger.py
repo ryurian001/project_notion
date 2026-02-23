@@ -47,7 +47,7 @@ class ExperimentLogger:
 
         data.update(kwargs)
 
-        self._log(data)
+        logging.info(json.dumps(data))
 
 
     # ----------------------------
