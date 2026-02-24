@@ -18,11 +18,14 @@ def run_experiment(script_path, log_dir, workspace=".", extra_args=None):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = os.path.join(logs_path, f"run_{timestamp}.log")
 
-    cmd = [
-        sys.executable, "-u",  # -u: unbuffered output
-        "-m",
-        script_path.replace("/", ".").replace("\\", ".").replace(".py", "")
-    ]
+    if script_path.endswith(".py") or "/" in script_path.replace("\\", "/"):
+        cmd = [sys.executable, "-u", script_path]
+    else:
+        cmd = [
+            sys.executable, "-u",  # -u: unbuffered output
+            "-m",
+            script_path
+        ]
 
     if extra_args:
         for k, v in extra_args.items():
@@ -35,8 +38,9 @@ def run_experiment(script_path, log_dir, workspace=".", extra_args=None):
 
     env = os.environ.copy()
     script_dir = os.path.abspath(os.path.join(project_root, os.path.dirname(script_path)))
-    # Add script_dir to PYTHONPATH so relative sibling imports work when run as a module
-    env["PYTHONPATH"] = f'{script_dir}:{env.get("PYTHONPATH", "")}' if env.get("PYTHONPATH") else script_dir
+    # Add project_root and script_dir to PYTHONPATH so root/sibling imports work
+    new_pythonpath = f"{project_root}:{script_dir}"
+    env["PYTHONPATH"] = f'{new_pythonpath}:{env.get("PYTHONPATH", "")}' if env.get("PYTHONPATH") else new_pythonpath
 
     process = subprocess.Popen(
         cmd,
