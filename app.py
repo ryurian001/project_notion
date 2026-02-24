@@ -25,8 +25,11 @@ with ws_col2:
     st.write("")
     st.write("")
     if st.button("📁 경로 적용"):
-        if os.path.isdir(workspace_input):
-            st.session_state.workspace = os.path.abspath(workspace_input)
+        # Replace backslashes with forward slashes for cross-platform compatibility (especially on Linux)
+        parsed_input = workspace_input.replace("\\", "/") if os.name != "nt" else workspace_input
+        
+        if os.path.isdir(parsed_input):
+            st.session_state.workspace = os.path.abspath(parsed_input)
             st.success(f"✅ 워크스페이스가 변경되었습니다: {st.session_state.workspace}")
         else:
             st.error("❌ 유효한 디렉토리 경로가 아닙니다.")
