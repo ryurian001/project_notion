@@ -74,8 +74,6 @@ def auto_log(name, data, token, db_id):
         parent={"database_id": db_id},
         properties=properties
     )
-<<<<<<< HEAD
-=======
 
 def test_connection(token, database_id):
     """Notion 연결 테스트"""
@@ -86,4 +84,3 @@ def test_connection(token, database_id):
         return True, f"연결 성공! (Database 조회 완료)", database_id
     except Exception as e:
         return False, str(e), None
->>>>>>> test1
