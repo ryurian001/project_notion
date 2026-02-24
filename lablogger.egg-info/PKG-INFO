@@ -1,0 +1,48 @@
+Metadata-Version: 2.4
+Name: lablogger
+Version: 0.1.0
+Summary: A simple experiment logger for ML/DL projects with JSON-formatted logging
+Home-page: https://github.com/ryurian001/project_notion/lablogger/lablogger.py
+Author: rianryu001
+Author-email: rwj1203@naver.com
+Keywords: logging experiment logger machine-learning deep-learning
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license-file
+Dynamic: requires-python
+Dynamic: summary
+
+개요
+=====
+* 노션과 실험결과를 연동하여 기록하는 것을 목적으로 함. 
+* 특히, 하이퍼파라미터 변화에 따른 성능 차이를 확실하게 확인하고자 함. 
+
+# 실행 방법
+## Step 1
+```bash
+pip install -r requirements.txt
+```
+## Step 2
+```bash
+streamlit run app.py
+```
+
