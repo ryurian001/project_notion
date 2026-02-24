@@ -3,3 +3,4 @@ pandas==2.3.3
 plotly==6.5.2
 notion-client==2.7.0
 numpy==2.1.2
+lablogger
