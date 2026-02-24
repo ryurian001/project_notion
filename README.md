@@ -7,6 +7,7 @@
 ## Step 1
 ```bash
 pip install -r requirements.txt
+pip install lablogger
 ```
 ## Step 2
 ```bash
